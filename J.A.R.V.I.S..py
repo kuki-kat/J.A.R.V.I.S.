@@ -1,3 +1,5 @@
+import webbrowser
+import os
 import random
 import platform
 import pyttsx3
@@ -6,6 +8,69 @@ import speech_recognition as sr
 import datetime
 import sys
 import time
+
+daddy_words = [
+    "dad",
+    "daddy",
+    "papa",
+    "pops",
+    "father",
+    "daddy",
+    "da",
+    "dada",
+    "pop",
+    "pa",
+    "baba" ]
+
+
+mom_words = [
+    "mom",
+    "mommy",
+    "mama",
+    "mum",
+    "mummy",
+    "ma",
+    "mother",
+    "momma",
+    "mam",
+    "mamma",
+    "mammy",
+    "mumsy",
+]
+
+
+boss_addresses = [
+    "sarbish Chaudhary",
+    "mr. Chaudhary",
+    "sarbish Sir",
+    "boss Chaudhary",
+    "sir Chaudhary"
+]
+
+ai_addresses = [
+    "boss",
+    "sir",
+    "master",
+    "owner",
+    "create",
+    "mantor",
+    "creator"
+]
+
+
+greeting_variations = [
+    "Hello boss, how can I help you?",
+    "Hi boss, what can I do for you?",
+    "Greetings boss, how may I assist you?",
+    "Hello sir, how can I assist you today?",
+    "Hey boss, what do you need?",
+    "Welcome back boss, how may I help?",
+    "Hello sir, what can I do for you today?",
+    "Hi boss, I’m ready. How can I assist?",
+    "Good day boss, how may I serve you?",
+    "Boss, I’m here. How can I help?"
+]
+
 
 stop_words = [
     "exit", "quit", "stop", "end", "terminate", "halt", "close", "shut up",
@@ -43,7 +108,8 @@ names_variations = [
     "Alias",
     "Username",
     "Handle",
-    "Title"
+    "Title",
+    "you"
 ]
 voice_assistant_variations = [
     "I’m Jarvis, your voice assistant, sir!",
@@ -97,6 +163,46 @@ def tell_day():
     talk(f"Today is {day}")
     print(f"☾𖤓 {day}")
 
+def open_chrome():
+    talk("Opening the chrome, sir!")
+    if platform.system() == "Windows":
+        os.system("start chrome")
+    elif platform.system() == "Linux":
+        os.system("google-chrome &")
+    else:
+        talk("Sorry sir, I cannot open Chrome on this OS.")
+
+def open_firefox():
+    talk("Opening the firefox, sir!")
+    if platform.system() == "Windows":
+        os.system("start firefox")
+    elif platform.system() == "Linux":
+        os.system("firfox &")
+    else:
+        talk("Sorry sir, I cannot open Chrome on this OS.")
+
+def open_facebook():
+    talk("opening the facebook, sir!")
+    if platform.system() == "Linux":
+        webbrowser.get("google-chrome").open("https://www.facebook.com")
+    elif platform.system() == "Windows":
+        webbrowser.get("windows-default").open("https://www.facebook.com")
+
+def open_youtube():
+    talk("opening the youtube, sir!")
+    if platform.system() == "Linux":
+        webbrowser.get("google-chrome").open("https://www.youtube.com")
+    elif platform.system() == "Windows":
+        webbrowser.get("windows-default").open("https://www.youtube.com")
+
+def open_user_choice(site):
+    talk(f"Opening {site}, sir!")
+    if platform.system() == "Linux":
+        webbrowser.get("google-chrome").open(f"https://www.{site}.com")
+    elif platform.system() == "Windows":
+        webbrowser.get("windows-default").open(f"https://www.{site}.com")
+
+
 def play_song(command):
     for action in song_actions:
         if action in command:
@@ -117,23 +223,66 @@ def run_assistant():
 
         if play_song(command):
             return
+
         elif "time" in command:
             tell_time()
+
         elif "date" in command:
             tell_date()
+
         elif "day" in command:
             tell_day()
+        
+        elif "chrome" in command:
+            open_chrome()
+
+        elif "firefox" in command:
+            open_firefox()
+
+        elif "facebook" in command:
+            open_facebook()
+
+        elif "youtube" in command:
+            open_youtube()
+
+        elif any(word in command for word in mom_words):
+            mother = random.choice(mom_words)
+            talk(f"your {mother} name is lalita chaudhary")
+
+        elif any(word in command for word in daddy_words):
+            daddy = random.choice(daddy_words)
+            talk(f"your {daddy} name is Ram Narayan chaudhary")
+
         elif any(word in command for word in names_variations):
             talk(random.choice(voice_assistant_variations))
+
+        elif any(word.lower() in command for word in ai_addresses):
+            talk(f"I am assistant of {random.choice(boss_addresses)}")
+
+
+
+
+        elif "open site" in command or "open website" in command:
+            talk("Which website do you want to open, sir?")
+            talk("I'm listening...")
+            site = take_command() 
+            
+            if site:
+                open_user_choice(site)
+            else:
+                talk("Sorry sir, I couldn't hear the website name.")    
+        
         elif any(word in command for word in stop_words):
             talk(random.choice(farewell_messages))
             print(random.choice(farewell_messages))
             sys.exit()
+
         else:
             talk("Sorry sir, I didn't understand that. Want me to add it?")
+
     except Exception as e:
         talk("Sorry sir, something went wrong over here!")
-        print(e)
+        #print(e)
 
 def change_voice():
     voices = engine.getProperty('voices')
@@ -153,9 +302,10 @@ def main():
 
     change_voice()
 
-    talk("Hello boss, How can I help you?")
+    talk(random.choice(greeting_variations))
     while True:
         run_assistant()
 
 if __name__ == "__main__":
     main()
+

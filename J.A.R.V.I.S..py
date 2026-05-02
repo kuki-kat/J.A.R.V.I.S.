@@ -3,18 +3,18 @@ import os
 import random
 import platform
 import pyttsx3
-import pywhatkit
 import speech_recognition as sr
 import datetime
 import sys
-import time
 import subprocess
+import os
+
 from openai import OpenAI
 
 # -------------------- API SETUP --------------------
 
 client = OpenAI(
-    api_key="API",  # 🔴 PUT YOUR GROQ API KEY HERE
+    api_key="API",  # SAFE METHOD (no hardcoding)
     base_url="https://api.groq.com/openai/v1"
 )
 
@@ -27,13 +27,9 @@ greeting_variations = [
     "Welcome back boss!"
 ]
 
-stop_words = [
-    "exit", "quit", "stop", "end", "terminate", "halt", "close"
-]
+stop_words = ["exit", "quit", "stop", "end", "terminate", "halt", "close"]
 
-song_actions = [
-    "play", "start", "listen", "begin", "launch", "stream"
-]
+song_actions = ["play", "start", "listen", "begin", "launch", "stream"]
 
 farewell_messages = [
     "Goodbye, sir!",
@@ -51,23 +47,26 @@ def talk(text):
 
 def take_command():
     listener = sr.Recognizer()
+
     with sr.Microphone() as source:
         print("🎧 Listening...")
         listener.pause_threshold = 1
-        audio = listener.listen(source)
+
+        try:
+            audio = listener.listen(source, timeout=5, phrase_time_limit=6)
+        except:
+            return ""
 
     try:
-        command = listener.recognize_google(audio)
-        command = command.lower()
+        command = listener.recognize_google(audio).lower()
         print("🗣️ You:", command)
         return command
 
     except sr.UnknownValueError:
-        print("❌ Didn't catch that...")
         return ""
 
     except sr.RequestError:
-        print("❌ Internet issue...")
+        talk("Internet issue")
         return ""
 
 # -------------------- AI --------------------
@@ -93,19 +92,19 @@ def ask_ai(question):
 # -------------------- FEATURES --------------------
 
 def tell_time():
-    current_time = datetime.datetime.now().strftime('%I:%M %p')
-    talk(f"The time is {current_time}")
-    print("🕒", current_time)
+    t = datetime.datetime.now().strftime('%I:%M %p')
+    talk(f"The time is {t}")
+    print("🕒", t)
 
 def tell_date():
-    current_date = datetime.datetime.now().strftime('%Y-%B-%d')
-    talk(f"Today is {current_date}")
-    print("📅", current_date)
+    d = datetime.datetime.now().strftime('%Y-%B-%d')
+    talk(f"Today is {d}")
+    print("📅", d)
 
 def tell_day():
-    current_day = datetime.datetime.now().strftime('%A')
-    talk(f"Today is {current_day}")
-    print("📅", current_day)
+    d = datetime.datetime.now().strftime('%A')
+    talk(f"Today is {d}")
+    print("📅", d)
 
 def open_chrome():
     talk("Opening Chrome")
@@ -134,13 +133,18 @@ def open_folder(folder):
     else:
         talk("Folder not found")
 
+# -------------------- SONG FIX (IMPORTANT) --------------------
+
 def play_song(command):
     for action in song_actions:
         if action in command:
             song = command.replace(action, "").replace("song", "").strip()
+
             if song:
                 talk(f"Playing {song}")
-                pywhatkit.playonyt(song)
+                webbrowser.open(
+                    "https://www.youtube.com/results?search_query=" + song
+                )
             else:
                 talk("Song name missing")
             return True
@@ -150,7 +154,6 @@ def play_song(command):
 
 def run_assistant():
     command = take_command()
-
     if not command:
         return
 
@@ -168,7 +171,7 @@ def run_assistant():
     elif "day" in command:
         tell_day()
 
-    # OPEN APPS
+    # APPS
     elif "chrome" in command:
         open_chrome()
 
@@ -185,13 +188,13 @@ def run_assistant():
             open_folder(folder)
 
     # EXIT
-    elif any(command.strip() == word for word in stop_words):
+    elif any(word in command for word in stop_words):
         msg = random.choice(farewell_messages)
         talk(msg)
         print(msg)
         sys.exit()
 
-    # AI FALLBACK 🔥
+    # AI FALLBACK
     else:
         ask_ai(command)
 
